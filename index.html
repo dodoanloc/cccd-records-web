@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tra cứu hồ sơ CCCD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <section class="topbar">
+      <div>
+        <div class="eyebrow">CCCD RECORDS</div>
+        <h1>Tra cứu hồ sơ</h1>
+      </div>
+      <input id="apiBase" value="https://n8n.tail735c05.ts.net" />
+    </section>
+
+    <section class="panel">
+      <div class="search-row">
+        <input id="searchInput" placeholder="Tìm theo tên, CCCD, CMND cũ, số điện thoại..." />
+        <button id="searchBtn">Tìm</button>
+      </div>
+      <div id="listContainer" class="list-container"></div>
+    </section>
+
+    <section class="panel detail-panel">
+      <div class="detail-head">
+        <h2>Chi tiết hồ sơ</h2>
+        <div class="actions">
+          <button id="copyJsonBtn">Copy JSON</button>
+          <button id="printBtn">In A4</button>
+        </div>
+      </div>
+      <div id="detailContent" class="detail-content">Chọn một hồ sơ để xem chi tiết.</div>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
