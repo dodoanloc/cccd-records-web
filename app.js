@@ -52,8 +52,8 @@ function enhanceCardImage(img, mode='card'){
   const sh = img.naturalHeight || img.height;
   let sx = 0, sy = 0, sWidth = sw, sHeight = sh;
   if (mode === 'card') {
-    sWidth = Math.round(sw * 0.88);
-    sHeight = Math.round(sh * 0.50);
+    sWidth = Math.round(sw * 0.80);
+    sHeight = Math.round(sh * 0.42);
     sx = Math.round((sw - sWidth) / 2);
     sy = Math.round((sh - sHeight) / 2);
   } else {
