@@ -208,12 +208,12 @@ els.printBtn.addEventListener('click', async () => {
       <div class="print-sheet">
         <div class="print-header">
           <div class="print-meta">
-            <h1>Hồ sơ khách hàng</h1>
+            <h1>Thông tin khách hàng</h1>
             <div><strong>Họ tên:</strong> ${esc(currentItem.full_name)}</div>
             <div><strong>CCCD:</strong> ${esc(currentItem.id_number)}</div>
             <div><strong>Ngày sinh:</strong> ${esc(currentItem.date_of_birth)}</div>
             <div><strong>Giới tính:</strong> ${esc(currentItem.gender)}</div>
-            <div><strong>Số điện thoại:</strong> ${esc(currentItem.phone_number)}</div>
+            <div><strong>Ngày cấp CCCD:</strong> ${esc(currentItem.issue_date || '')}</div>
             <div><strong>Ngày thu thập:</strong> ${esc(formatDateTime(currentItem.created_at))}</div>
           </div>
           <div class="print-qr-top">${qrSrc ? `<img src="${qrSrc}">` : '<div class="muted">Không có ảnh QR</div>'}</div>
