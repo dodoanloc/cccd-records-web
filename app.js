@@ -52,9 +52,9 @@ function enhanceCardImage(img, mode='card'){
   const sh = img.naturalHeight || img.height;
   let sx = 0, sy = 0, sWidth = sw, sHeight = sh;
   if (mode === 'card') {
-    sWidth = sw;
-    sHeight = Math.round(sh * 0.40);
-    sx = 0;
+    sWidth = Math.round(sw * 0.94);
+    sHeight = Math.round(sh * 0.36);
+    sx = Math.round((sw - sWidth) / 2);
     sy = Math.round((sh - sHeight) / 2 - sh * 0.02);
     sy = Math.max(0, sy);
   } else {
@@ -68,8 +68,8 @@ function enhanceCardImage(img, mode='card'){
   ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const d = imageData.data;
-  const contrast = mode === 'card' ? 1.34 : 1.18;
-  const brightness = mode === 'card' ? 12 : 8;
+  const contrast = mode === 'card' ? 1.48 : 1.18;
+  const brightness = mode === 'card' ? 16 : 8;
   for (let i = 0; i < d.length; i += 4) {
     d[i] = Math.max(0, Math.min(255, ((d[i] - 128) * contrast) + 128 + brightness));
     d[i+1] = Math.max(0, Math.min(255, ((d[i+1] - 128) * contrast) + 128 + brightness));
