@@ -26,11 +26,19 @@ function imageOrPlaceholder(url,label){return url?`<img src="${esc(url)}" alt="$
 
 function loadImage(url){
   return new Promise((resolve,reject)=>{
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = ()=>resolve(img);
-    img.onerror = reject;
-    img.src = url;
+    fetch(url)
+      .then(r => r.blob())
+      .then(blob => {
+        const objectUrl = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve(img);
+        };
+        img.onerror = reject;
+        img.src = objectUrl;
+      })
+      .catch(reject);
   });
 }
 
@@ -41,8 +49,8 @@ function enhanceCardImage(img, mode='card'){
   const sh = img.naturalHeight || img.height;
   let sx = 0, sy = 0, sWidth = sw, sHeight = sh;
   if (mode === 'card') {
-    sWidth = Math.round(sw * 0.76);
-    sHeight = Math.round(sh * 0.42);
+    sWidth = Math.round(sw * 0.84);
+    sHeight = Math.round(sh * 0.54);
     sx = Math.round((sw - sWidth) / 2);
     sy = Math.round((sh - sHeight) / 2);
   } else {
