@@ -176,6 +176,16 @@ els.copyJsonBtn.addEventListener('click', async () => {
     alert('Không copy được JSON.');
   }
 });
+async function waitForImages(root) {
+  const imgs = Array.from(root.querySelectorAll('img'));
+  await Promise.all(imgs.map((img) => new Promise((resolve) => {
+    if (img.complete && img.naturalWidth > 0) return resolve(true);
+    const done = () => resolve(true);
+    img.onload = done;
+    img.onerror = done;
+  })));
+}
+
 els.printBtn.addEventListener('click', async () => {
   if (!currentItem) return;
   try {
@@ -184,6 +194,9 @@ els.printBtn.addEventListener('click', async () => {
       currentItem.back_image_url ? loadImage(currentItem.back_image_url).then(img => enhanceCardImage(img, 'card')).catch(()=>'') : Promise.resolve(''),
       (currentItem.generated_qr_image_url || currentItem.qr_image_url) ? loadImage(currentItem.generated_qr_image_url || currentItem.qr_image_url).then(img => enhanceCardImage(img, 'qr')).catch(()=>'') : Promise.resolve('')
     ]);
+    if (!frontSrc && !backSrc && !qrSrc) {
+      return alert('Không chuẩn bị được ảnh để in A4.');
+    }
     const root = document.createElement('div');
     root.className = 'print-root';
     root.innerHTML = `
@@ -200,15 +213,18 @@ els.printBtn.addEventListener('click', async () => {
           </div>
         </div>
         <div class="print-grid">
-          <div class="print-card">${frontSrc ? `<img src="${frontSrc}">` : '<div></div>'}</div>
-          <div class="print-card">${backSrc ? `<img src="${backSrc}">` : '<div></div>'}</div>
-          <div class="print-card qr">${qrSrc ? `<img src="${qrSrc}">` : '<div></div>'}</div>
+          <div class="print-card">${frontSrc ? `<img src="${frontSrc}">` : '<div class="muted">Không có ảnh mặt trước</div>'}</div>
+          <div class="print-card">${backSrc ? `<img src="${backSrc}">` : '<div class="muted">Không có ảnh mặt sau</div>'}</div>
+          <div class="print-card qr">${qrSrc ? `<img src="${qrSrc}">` : '<div class="muted">Không có ảnh QR</div>'}</div>
         </div>
       </div>
     `;
     document.body.appendChild(root);
-    window.print();
-    setTimeout(() => root.remove(), 500);
+    await waitForImages(root);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => root.remove(), 800);
+    }, 250);
   } catch (e) {
     alert('Không chuẩn bị được dữ liệu in A4.');
   }
