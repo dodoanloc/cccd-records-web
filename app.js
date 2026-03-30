@@ -27,7 +27,10 @@ function imageOrPlaceholder(url,label){return url?`<img src="${esc(url)}" alt="$
 function loadImage(url){
   return new Promise((resolve,reject)=>{
     fetch(url)
-      .then(r => r.blob())
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
+        return r.blob();
+      })
       .then(blob => {
         const objectUrl = URL.createObjectURL(blob);
         const img = new Image();
@@ -35,7 +38,7 @@ function loadImage(url){
           URL.revokeObjectURL(objectUrl);
           resolve(img);
         };
-        img.onerror = reject;
+        img.onerror = () => reject(new Error(`Image decode failed: ${url}`));
         img.src = objectUrl;
       })
       .catch(reject);
@@ -189,13 +192,14 @@ async function waitForImages(root) {
 els.printBtn.addEventListener('click', async () => {
   if (!currentItem) return;
   try {
+    const errors = [];
     const [frontSrc, backSrc, qrSrc] = await Promise.all([
-      currentItem.front_image_url ? loadImage(currentItem.front_image_url).then(img => enhanceCardImage(img, 'card')).catch(()=>'') : Promise.resolve(''),
-      currentItem.back_image_url ? loadImage(currentItem.back_image_url).then(img => enhanceCardImage(img, 'card')).catch(()=>'') : Promise.resolve(''),
-      (currentItem.generated_qr_image_url || currentItem.qr_image_url) ? loadImage(currentItem.generated_qr_image_url || currentItem.qr_image_url).then(img => enhanceCardImage(img, 'qr')).catch(()=>'') : Promise.resolve('')
+      currentItem.front_image_url ? loadImage(currentItem.front_image_url).then(img => enhanceCardImage(img, 'card')).catch((e)=>{ errors.push(`Mặt trước: ${e.message}`); return currentItem.front_image_url; }) : Promise.resolve(''),
+      currentItem.back_image_url ? loadImage(currentItem.back_image_url).then(img => enhanceCardImage(img, 'card')).catch((e)=>{ errors.push(`Mặt sau: ${e.message}`); return currentItem.back_image_url; }) : Promise.resolve(''),
+      (currentItem.generated_qr_image_url || currentItem.qr_image_url) ? loadImage(currentItem.generated_qr_image_url || currentItem.qr_image_url).then(img => enhanceCardImage(img, 'qr')).catch((e)=>{ errors.push(`QR: ${e.message}`); return currentItem.generated_qr_image_url || currentItem.qr_image_url; }) : Promise.resolve('')
     ]);
     if (!frontSrc && !backSrc && !qrSrc) {
-      return alert('Không chuẩn bị được ảnh để in A4.');
+      return alert(`Không chuẩn bị được ảnh để in A4. ${errors.join(' | ')}`.trim());
     }
     const root = document.createElement('div');
     root.className = 'print-root';
