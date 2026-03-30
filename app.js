@@ -24,6 +24,49 @@ function formatDateTime(v){if(!v) return ''; return String(v).replace('T',' ').s
 function toJsonShape(x){const full=(x.full_name||'').trim();const parts=full?full.split(/\s+/):[];const initials=parts.map(p=>p[0]?.toUpperCase()).filter(Boolean).join('.');return {full_name:(x.full_name||'').toUpperCase(),full_name_english:(x.full_name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase(),short_name:initials?`${initials}.`:'' ,short_name_english:initials?`${initials}.`:'' ,date_of_birth:x.date_of_birth||'',gender:x.gender||'',mobile_phone:x.phone_number||'',email:'',idcard_num:x.id_number||'',idcard_issue_date:x.issue_date||'',idcard_expire_date:x.expiry_date||'',nationality:'VN',id_type:'GTTT',issue_place_code:'318'};}
 function imageOrPlaceholder(url,label){return url?`<img src="${esc(url)}" alt="${esc(label)}">`:`<div class="muted">Chưa có ảnh</div>`;}
 
+function loadImage(url){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = ()=>resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function enhanceCardImage(img, mode='card'){
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const sw = img.naturalWidth || img.width;
+  const sh = img.naturalHeight || img.height;
+  let sx = 0, sy = 0, sWidth = sw, sHeight = sh;
+  if (mode === 'card') {
+    sWidth = Math.round(sw * 0.76);
+    sHeight = Math.round(sh * 0.42);
+    sx = Math.round((sw - sWidth) / 2);
+    sy = Math.round((sh - sHeight) / 2);
+  } else {
+    const size = Math.min(sw, sh) * 0.94;
+    sWidth = sHeight = Math.round(size);
+    sx = Math.round((sw - sWidth) / 2);
+    sy = Math.round((sh - sHeight) / 2);
+  }
+  canvas.width = mode === 'card' ? 1100 : 900;
+  canvas.height = mode === 'card' ? 700 : 900;
+  ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = imageData.data;
+  const contrast = 1.22;
+  const brightness = 8;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i] = Math.max(0, Math.min(255, ((d[i] - 128) * contrast) + 128 + brightness));
+    d[i+1] = Math.max(0, Math.min(255, ((d[i+1] - 128) * contrast) + 128 + brightness));
+    d[i+2] = Math.max(0, Math.min(255, ((d[i+2] - 128) * contrast) + 128 + brightness));
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas.toDataURL('image/jpeg', 0.92);
+}
+
 async function loadList(){
   const q = encodeURIComponent(els.searchInput.value.trim());
   const fromDate = (els.fromDateInput.value || '').trim();
@@ -125,29 +168,42 @@ els.copyJsonBtn.addEventListener('click', async () => {
     alert('Không copy được JSON.');
   }
 });
-els.printBtn.addEventListener('click', () => {
+els.printBtn.addEventListener('click', async () => {
   if (!currentItem) return;
-  const root = document.createElement('div');
-  root.className = 'print-root';
-  root.innerHTML = `
-    <div class="print-sheet">
-      <h1>Hồ sơ khách hàng</h1>
-      <div><strong>Họ tên:</strong> ${esc(currentItem.full_name)}</div>
-      <div><strong>CCCD:</strong> ${esc(currentItem.id_number)}</div>
-      <div><strong>Ngày sinh:</strong> ${esc(currentItem.date_of_birth)}</div>
-      <div><strong>Giới tính:</strong> ${esc(currentItem.gender)}</div>
-      <div><strong>Số điện thoại:</strong> ${esc(currentItem.phone_number)}</div>
-      <div><strong>Ngày thu thập:</strong> ${esc(formatDateTime(currentItem.created_at))}</div>
-      <div class="print-grid">
-        ${currentItem.front_image_url ? `<img src="${esc(currentItem.front_image_url)}">` : '<div></div>'}
-        ${currentItem.back_image_url ? `<img src="${esc(currentItem.back_image_url)}">` : '<div></div>'}
-        ${(currentItem.generated_qr_image_url || currentItem.qr_image_url) ? `<img src="${esc(currentItem.generated_qr_image_url || currentItem.qr_image_url)}">` : '<div></div>'}
+  try {
+    const [frontSrc, backSrc, qrSrc] = await Promise.all([
+      currentItem.front_image_url ? loadImage(currentItem.front_image_url).then(img => enhanceCardImage(img, 'card')).catch(()=>'') : Promise.resolve(''),
+      currentItem.back_image_url ? loadImage(currentItem.back_image_url).then(img => enhanceCardImage(img, 'card')).catch(()=>'') : Promise.resolve(''),
+      (currentItem.generated_qr_image_url || currentItem.qr_image_url) ? loadImage(currentItem.generated_qr_image_url || currentItem.qr_image_url).then(img => enhanceCardImage(img, 'qr')).catch(()=>'') : Promise.resolve('')
+    ]);
+    const root = document.createElement('div');
+    root.className = 'print-root';
+    root.innerHTML = `
+      <div class="print-sheet">
+        <div class="print-header">
+          <div class="print-meta">
+            <h1>Hồ sơ khách hàng</h1>
+            <div><strong>Họ tên:</strong> ${esc(currentItem.full_name)}</div>
+            <div><strong>CCCD:</strong> ${esc(currentItem.id_number)}</div>
+            <div><strong>Ngày sinh:</strong> ${esc(currentItem.date_of_birth)}</div>
+            <div><strong>Giới tính:</strong> ${esc(currentItem.gender)}</div>
+            <div><strong>Số điện thoại:</strong> ${esc(currentItem.phone_number)}</div>
+            <div><strong>Ngày thu thập:</strong> ${esc(formatDateTime(currentItem.created_at))}</div>
+          </div>
+        </div>
+        <div class="print-grid">
+          <div class="print-card">${frontSrc ? `<img src="${frontSrc}">` : '<div></div>'}</div>
+          <div class="print-card">${backSrc ? `<img src="${backSrc}">` : '<div></div>'}</div>
+          <div class="print-card qr">${qrSrc ? `<img src="${qrSrc}">` : '<div></div>'}</div>
+        </div>
       </div>
-    </div>
-  `;
-  document.body.appendChild(root);
-  window.print();
-  setTimeout(() => root.remove(), 300);
+    `;
+    document.body.appendChild(root);
+    window.print();
+    setTimeout(() => root.remove(), 500);
+  } catch (e) {
+    alert('Không chuẩn bị được dữ liệu in A4.');
+  }
 });
 
 loadList();
