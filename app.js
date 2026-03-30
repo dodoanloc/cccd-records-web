@@ -26,8 +26,8 @@ function imageOrPlaceholder(url,label){return url?`<img src="${esc(url)}" alt="$
 
 async function loadList(){
   const q = encodeURIComponent(els.searchInput.value.trim());
-  const fromDate = els.fromDateInput.value;
-  const toDate = els.toDateInput.value;
+  const fromDate = (els.fromDateInput.value || '').trim();
+  const toDate = (els.toDateInput.value || '').trim();
   const query = [`q=${q}`,(fromDate?`from_date=${encodeURIComponent(fromDate)}`:''),(toDate?`to_date=${encodeURIComponent(toDate)}`:'')].filter(Boolean).join('&');
   const res = await fetch(api(`/api/cccd/records${query?`?${query}`:''}`));
   const json = await res.json();

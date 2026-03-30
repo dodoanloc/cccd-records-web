@@ -15,14 +15,15 @@
       <div>
         <div class="eyebrow">CCCD RECORDS</div>
         <h1>Tra cứu hồ sơ</h1>
+        <div id="backendHint" class="backend-hint">Backend mặc định: http://192.168.1.161:8010 (lọc ngày để trống = mọi lúc)</div>
       </div>
     </section>
 
     <section class="panel">
       <div class="search-grid">
         <input id="searchInput" placeholder="Tìm theo tên, CCCD, CMND cũ, số điện thoại..." />
-        <input id="fromDateInput" type="date" />
-        <input id="toDateInput" type="date" />
+        <input id="fromDateInput" type="date" placeholder="Từ ngày (để trống = mọi lúc)" />
+        <input id="toDateInput" type="date" placeholder="Đến ngày (để trống = mọi lúc)" />
         <button id="searchBtn">Lọc</button>
         <button id="exportExcelBtn" class="secondary-btn">Xuất Excel</button>
       </div>
