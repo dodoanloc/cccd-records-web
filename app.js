@@ -65,6 +65,7 @@ function renderTable(){
 
 function showDetail(item){
   currentItem = item;
+  const jsonText = JSON.stringify(toJsonShape(item), null, 2);
   els.detailContent.innerHTML = `
     <div class="detail-grid">
       <div class="detail-box"><label>Họ và tên</label>${esc(item.full_name)}</div>
@@ -81,6 +82,7 @@ function showDetail(item){
       <div class="image-card"><span>Mặt sau</span>${imageOrPlaceholder(item.back_image_url, 'Mặt sau')}</div>
       <div class="image-card"><span>Mã QR</span>${imageOrPlaceholder(item.generated_qr_image_url || item.qr_image_url, 'Mã QR')}</div>
     </div>
+    <div class="detail-box json-box"><label>JSON chuẩn</label>${esc(jsonText)}</div>
   `;
 }
 
@@ -104,7 +106,25 @@ els.searchBtn.addEventListener('click', loadList);
 els.exportExcelBtn.addEventListener('click', exportExcel);
 els.prevPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage -= 1; renderTable(); } });
 els.nextPageBtn.addEventListener('click', () => { if (currentPage < Math.ceil(allItems.length / PAGE_SIZE)) { currentPage += 1; renderTable(); } });
-els.copyJsonBtn.addEventListener('click', async () => { if(!currentItem) return; await navigator.clipboard.writeText(JSON.stringify(toJsonShape(currentItem), null, 2)); });
+els.copyJsonBtn.addEventListener('click', async () => {
+  if(!currentItem) return;
+  const text = JSON.stringify(toJsonShape(currentItem), null, 2);
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    alert('Đã copy JSON.');
+  } catch (e) {
+    alert('Không copy được JSON.');
+  }
+});
 els.printBtn.addEventListener('click', () => {
   if (!currentItem) return;
   const root = document.createElement('div');
