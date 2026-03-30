@@ -215,11 +215,11 @@ els.printBtn.addEventListener('click', async () => {
             <div><strong>Số điện thoại:</strong> ${esc(currentItem.phone_number)}</div>
             <div><strong>Ngày thu thập:</strong> ${esc(formatDateTime(currentItem.created_at))}</div>
           </div>
+          <div class="print-qr-top">${qrSrc ? `<img src="${qrSrc}">` : '<div class="muted">Không có ảnh QR</div>'}</div>
         </div>
         <div class="print-grid">
           <div class="print-card">${frontSrc ? `<img src="${frontSrc}">` : '<div class="muted">Không có ảnh mặt trước</div>'}</div>
           <div class="print-card">${backSrc ? `<img src="${backSrc}">` : '<div class="muted">Không có ảnh mặt sau</div>'}</div>
-          <div class="print-card qr">${qrSrc ? `<img src="${qrSrc}">` : '<div class="muted">Không có ảnh QR</div>'}</div>
         </div>
       </div>
     `;
