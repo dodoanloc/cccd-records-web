@@ -11,6 +11,8 @@ const els = {
   nextPageBtn: document.getElementById('nextPageBtn'),
   pageInfo: document.getElementById('pageInfo'),
   detailContent: document.getElementById('detailContent'),
+  extraEmailInput: document.getElementById('extraEmailInput'),
+  sendEmailBtn: document.getElementById('sendEmailBtn'),
   copyJsonBtn: document.getElementById('copyJsonBtn'),
   printBtn: document.getElementById('printBtn')
 };
@@ -167,6 +169,21 @@ els.searchBtn.addEventListener('click', loadList);
 els.exportExcelBtn.addEventListener('click', exportExcel);
 els.prevPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage -= 1; renderTable(); } });
 els.nextPageBtn.addEventListener('click', () => { if (currentPage < Math.ceil(allItems.length / PAGE_SIZE)) { currentPage += 1; renderTable(); } });
+els.sendEmailBtn.addEventListener('click', async () => {
+  if (!currentItem) return alert('Chọn một hồ sơ trước.');
+  try {
+    const res = await fetch(api('/api/cccd/send-email'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ record_id: currentItem.id, extra_email: els.extraEmailInput.value.trim() })
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) throw new Error(json?.detail || 'Gửi email thất bại');
+    alert(`Đã gửi email tới: ${json.sent_to.join(', ')}`);
+  } catch (e) {
+    alert(String(e));
+  }
+});
 els.copyJsonBtn.addEventListener('click', async () => {
   if(!currentItem) return;
   const text = JSON.stringify(toJsonShape(currentItem), null, 2);
