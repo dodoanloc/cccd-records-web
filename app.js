@@ -58,19 +58,7 @@ function enhanceCardImage(img, mode='card'){
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   const sw = img.naturalWidth || img.width;
   const sh = img.naturalHeight || img.height;
-  let sx = 0, sy = 0, sWidth = sw, sHeight = sh;
-  if (mode === 'card') {
-    sWidth = sw;
-    sHeight = Math.round(sh * 0.72);
-    sx = 0;
-    sy = Math.round((sh - sHeight) / 2 + sh * 0.06);
-    sy = Math.max(0, sy);
-  } else {
-    const size = Math.min(sw, sh) * 0.94;
-    sWidth = sHeight = Math.round(size);
-    sx = Math.round((sw - sWidth) / 2);
-    sy = Math.round((sh - sHeight) / 2);
-  }
+  const sx = 0, sy = 0, sWidth = sw, sHeight = sh;
   canvas.width = mode === 'card' ? 1100 : 900;
   canvas.height = mode === 'card' ? 700 : 900;
   ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
