@@ -98,8 +98,8 @@ function renderTable(){
       <td>${esc(item.full_name || '')}</td>
       <td>${esc(item.id_number || '')}</td>
       <td>${esc(item.date_of_birth || '')}</td>
-      <td>${esc(item.gender || '')}</td>
       <td>${esc(item.phone_number || '')}</td>
+      <td>${esc(item.created_by || '')}</td>
       <td>${esc(formatDateTime(item.created_at))}</td>
     </tr>
   `).join('') || '<tr><td colspan="7" class="muted">Chưa có hồ sơ nào.</td></tr>';
@@ -212,49 +212,10 @@ async function waitForImages(root) {
   })));
 }
 
-els.printBtn.addEventListener('click', async () => {
-  if (!currentItem) return;
-  try {
-    const errors = [];
-    const [frontSrc, backSrc, qrSrc] = await Promise.all([
-      currentItem.front_image_url ? loadImage(currentItem.front_image_url).then(img => enhanceCardImage(img, 'card')).catch((e)=>{ errors.push(`Mặt trước: ${e.message}`); return currentItem.front_image_url; }) : Promise.resolve(''),
-      currentItem.back_image_url ? loadImage(currentItem.back_image_url).then(img => enhanceCardImage(img, 'card')).catch((e)=>{ errors.push(`Mặt sau: ${e.message}`); return currentItem.back_image_url; }) : Promise.resolve(''),
-      (currentItem.generated_qr_image_url || currentItem.qr_image_url) ? Promise.resolve(currentItem.generated_qr_image_url || currentItem.qr_image_url) : Promise.resolve('')
-    ]);
-    if (!frontSrc && !backSrc && !qrSrc) {
-      return alert(`Không chuẩn bị được ảnh để in A4. ${errors.join(' | ')}`.trim());
-    }
-    const root = document.createElement('div');
-    root.className = 'print-root';
-    root.innerHTML = `
-      <div class="print-sheet">
-        <div class="print-header">
-          <div class="print-meta">
-            <h1>Thông tin khách hàng</h1>
-            <div><strong>Họ tên:</strong> ${esc(currentItem.full_name)}</div>
-            <div><strong>CCCD:</strong> ${esc(currentItem.id_number)}</div>
-            <div><strong>Ngày sinh:</strong> ${esc(currentItem.date_of_birth)}</div>
-            <div><strong>Giới tính:</strong> ${esc(currentItem.gender)}</div>
-            <div><strong>Ngày cấp CCCD:</strong> ${esc(currentItem.issue_date || '')}</div>
-            <div><strong>Ngày thu thập:</strong> ${esc(formatDateTime(currentItem.created_at))}</div>
-          </div>
-          <div class="print-qr-top">${qrSrc ? `<img src="${qrSrc}">` : '<div class="muted">Không có ảnh QR</div>'}</div>
-        </div>
-        <div class="print-grid">
-          <div class="print-card">${frontSrc ? `<img src="${frontSrc}">` : '<div class="muted">Không có ảnh mặt trước</div>'}</div>
-          <div class="print-card">${backSrc ? `<img src="${backSrc}">` : '<div class="muted">Không có ảnh mặt sau</div>'}</div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(root);
-    await waitForImages(root);
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => root.remove(), 800);
-    }, 250);
-  } catch (e) {
-    alert('Không chuẩn bị được dữ liệu in A4.');
-  }
+els.printBtn.addEventListener('click', () => {
+  if (!currentItem) return alert('Chọn một hồ sơ trước.');
+  const url = `print.html?id=${encodeURIComponent(currentItem.id)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
 });
 
 loadList();
