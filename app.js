@@ -30,7 +30,7 @@ function formatDdMmYyyy(d){const dd=String(d.getDate()).padStart(2,'0'); const m
 function calcExpireDate(dobText){const dob=parseDdMmYyyy(dobText); if(!dob) return ''; const today=new Date(); let age=today.getFullYear()-dob.getFullYear(); const hadBirthday=(today.getMonth()>dob.getMonth()) || (today.getMonth()===dob.getMonth() && today.getDate()>=dob.getDate()); if(!hadBirthday) age-=1; if(age<12) return formatDdMmYyyy(new Date(dob.getFullYear()+14,dob.getMonth(),dob.getDate())); if(age<23) return formatDdMmYyyy(new Date(dob.getFullYear()+25,dob.getMonth(),dob.getDate())); if(age<38) return formatDdMmYyyy(new Date(dob.getFullYear()+40,dob.getMonth(),dob.getDate())); if(age<58) return formatDdMmYyyy(new Date(dob.getFullYear()+60,dob.getMonth(),dob.getDate())); return '31/12/9999';}
 function getIssuePlaceCode(issueDateText){const issueDate=parseDdMmYyyy(issueDateText); const cutoff=new Date(2024,6,1); if(!issueDate) return '318'; return issueDate < cutoff ? '318' : '004';}
 function toJsonShape(x){const titleName=toTitleCaseVietnamese(x.full_name||'');const shortName=titleName;const shortNameEnglish=toAsciiPreserveCase(titleName);return {full_name:titleName,full_name_english:toAsciiPreserveCase(titleName),short_name:shortName,short_name_english:shortNameEnglish,date_of_birth:x.date_of_birth||'',gender:x.gender||'',mobile_phone:x.phone_number||'',email:'',idcard_num:x.id_number||'',idcard_issue_date:x.issue_date||'',idcard_expire_date:calcExpireDate(x.date_of_birth||''),nationality:'VN',id_type:'GTTT',issue_place_code:getIssuePlaceCode(x.issue_date||''),occupation:x.occupation||'Kinh doanh tự do',address:x.current_address||''};}
-function imageOrPlaceholder(url,label){return url?`<img class="detail-original-image" src="${esc(url)}" alt="${esc(label)}">`:`<div class="muted">Chưa có ảnh</div>`;}
+function imageOrPlaceholder(url,label){return url?`<img class="detail-original-image" data-enhance="card" src="${esc(url)}" alt="${esc(label)}">`:`<div class="muted">Chưa có ảnh</div>`;}
 
 function loadImage(url){
   return new Promise((resolve,reject)=>{
@@ -126,6 +126,16 @@ function renderTable(){
   els.nextPageBtn.disabled = currentPage >= totalPages;
 }
 
+async function enhanceDetailImages() {
+  const imgs = Array.from(document.querySelectorAll('.detail-original-image'));
+  for (const imgEl of imgs) {
+    try {
+      const img = await loadImage(imgEl.src);
+      imgEl.src = enhanceCardImage(img, 'card');
+    } catch (_) {}
+  }
+}
+
 function showDetail(item){
   currentItem = item;
   const jsonText = JSON.stringify(toJsonShape(item), null, 2);
@@ -147,6 +157,7 @@ function showDetail(item){
     </div>
     <div class="detail-box json-box"><label>JSON chuẩn</label>${esc(jsonText)}</div>
   `;
+  enhanceDetailImages();
 }
 
 function exportExcel(){
