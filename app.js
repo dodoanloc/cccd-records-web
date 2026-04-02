@@ -22,7 +22,20 @@ let currentItem = null;
 
 function api(path){return `${API_BASE}${path}`;}
 function esc(v){return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function formatDateTime(v){if(!v) return ''; return String(v).replace('T',' ').slice(0,16);}
+function formatDateTime(v){
+  if(!v) return '';
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return String(v).replace('T',' ').slice(0,16);
+  return new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(d).replace(',', '');
+}
 function toTitleCaseVietnamese(v){return String(v||'').toLowerCase().split(/\s+/).filter(Boolean).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');}
 function toAsciiPreserveCase(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D');}
 function parseDdMmYyyy(value){const m=String(value||'').match(/^(\d{2})\/(\d{2})\/(\d{4})$/); if(!m) return null; return new Date(Number(m[3]), Number(m[2])-1, Number(m[1]));}
@@ -104,6 +117,7 @@ function renderTable(){
     </tr>
   `).join('') || '<tr><td colspan="7" class="muted">Chưa có hồ sơ nào.</td></tr>';
   [...els.tableBody.querySelectorAll('tr[data-id]')].forEach((tr) => {
+    if (currentItem && currentItem.id === tr.dataset.id) tr.classList.add('selected');
     tr.onclick = () => {
       const item = allItems.find(x => x.id === tr.dataset.id);
       if (item) showDetail(item);
@@ -126,6 +140,7 @@ async function enhanceDetailImages() {
 
 function showDetail(item){
   currentItem = item;
+  renderTable();
   const jsonText = JSON.stringify(toJsonShape(item), null, 2);
   els.detailContent.innerHTML = `
     <div class="detail-grid">
