@@ -11,15 +11,33 @@
 </head>
 <body>
   <div class="app-shell">
-    <section class="topbar">
-      <div>
-        <div class="eyebrow">CCCD RECORDS</div>
-        <h1>Tra cứu hồ sơ</h1>
-        <div id="backendHint" class="backend-hint">Backend mặc định: http://192.168.1.161:8010 (lọc ngày để trống = mọi lúc)</div>
+    <section id="authSection" class="panel">
+      <div class="detail-head">
+        <div>
+          <div class="eyebrow">CCCD RECORDS</div>
+          <h2>Đăng nhập tra cứu</h2>
+        </div>
+      </div>
+      <div class="search-grid auth-grid">
+        <input id="loginUsername" placeholder="Tên đăng nhập" />
+        <input id="loginPassword" type="password" placeholder="Mật khẩu" />
+        <button id="loginBtn">Đăng nhập</button>
+        <div id="loginStatus" class="status info">Đăng nhập bằng tài khoản giống web thu thập CCCD.</div>
       </div>
     </section>
 
-    <section class="panel">
+    <section id="userBar" class="topbar hidden">
+      <div>
+        <div class="eyebrow">CCCD RECORDS</div>
+        <h1>Tra cứu hồ sơ</h1>
+        <div id="currentUserLabel" class="backend-hint"></div>
+      </div>
+      <div class="actions">
+        <button id="logoutBtn" class="secondary-btn">Đăng xuất</button>
+      </div>
+    </section>
+
+    <section id="recordsPanel" class="panel hidden">
       <div class="search-grid">
         <input id="searchInput" placeholder="Tìm theo tên, CCCD, CMND cũ, số điện thoại..." />
         <input id="fromDateInput" type="date" placeholder="Từ ngày (để trống = mọi lúc)" />
@@ -35,8 +53,8 @@
               <th>Họ tên</th>
               <th>Số CCCD</th>
               <th>Ngày sinh</th>
-              <th>Giới tính</th>
               <th>Số điện thoại</th>
+              <th>Người thu thập</th>
               <th>Ngày thu thập</th>
             </tr>
           </thead>
@@ -50,7 +68,7 @@
       </div>
     </section>
 
-    <section class="panel detail-panel">
+    <section id="detailPanel" class="panel detail-panel hidden">
       <div class="detail-head">
         <h2>Chi tiết hồ sơ</h2>
         <div class="actions">
@@ -58,6 +76,8 @@
           <button id="sendEmailBtn">Gửi email</button>
           <button id="copyJsonBtn">Copy JSON</button>
           <button id="printBtn">In A4</button>
+          <button id="printCatalogBtn" class="secondary-btn">In danh mục</button>
+          <button id="deleteBtn" class="secondary-btn hidden">Xoá bản ghi</button>
         </div>
       </div>
       <div id="detailContent" class="detail-content">Chọn một hồ sơ để xem chi tiết.</div>
